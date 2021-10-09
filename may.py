@@ -227,7 +227,7 @@ if __name__ == '__main__':
 			webbrowser.open_new_tab(url)
 
 		elif "search youtube" in wants:
-			url = f'https://www.youtube.com/search_query={wants.replace("search ","").replace("youtube ","").replace(" ","+")}'
+			url = f'https://www.youtube.com/results?search_query={wants.replace("search ","").replace("youtube ","").replace(" ","+")}'
 			webbrowser.open_new_tab(url)
 
 		elif "joke" in wants:
