@@ -226,6 +226,10 @@ if __name__ == '__main__':
 			url = f'https://www.google.com/search?q={wants.replace("search ","").replace("google ","").replace(" ","+")}'
 			webbrowser.open_new_tab(url)
 
+		elif "search youtube" in wants:
+			url = f'https://www.youtube.com/search_query={wants.replace("search ","").replace("youtube ","").replace(" ","+")}'
+			webbrowser.open_new_tab(url)
+
 		elif "joke" in wants:
 			try:
 				url = "https://api.yomomma.info/"
