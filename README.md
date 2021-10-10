@@ -3,13 +3,9 @@ May is your friend who helps you in doing your all day tasks, like google assist
 ## Installation
 Just pull it & Run it.
 ## Points to Watch out
-Uncomment the ```listen``` function.
+Uncomment the ```wants``` if you want to type the thing you want to say.
 ```python
-wishmemay()
-# listen()
-```
-```python
-# wants = listen().lower()
+# wants = input("\n\nEnter: ").lower()
 ```
 ## Usage
 Just speak and ask anything to it. Can use google search and I may add universal music play from Youtube (youtube doesn't like it lol). Can use your music from a folder from your localdisk. And you can explore for more.
