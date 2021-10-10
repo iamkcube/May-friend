@@ -116,10 +116,15 @@ def myalarm(hrs,minutes,ampm):
 
 if __name__ == '__main__':
 	wishmemay()
-	
+
 
 	while True:
-		wants = input("\n\nEnter: ").lower()
+		while True:
+			say = listen()
+			if say is not None:
+				break
+		# wants = input("\n\nEnter: ").lower() #listen().lower()
+		wants = say.lower()
 		# listen()
 
 		if wants == "exit" or 'bye' in wants:
