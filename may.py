@@ -36,7 +36,8 @@ def listen():
 	with sprec.Microphone() as source:
 		print("Say.<3")
 		r.pause_threshold = 1
-		audio = r.listen(source,timeout=1,phrase_time_limit=10)
+		# audio = r.listen(source,timeout=1,phrase_time_limit=None)
+		audio = r.listen(source,timeout=3,phrase_time_limit=30)
 
 	try:
 		print("Listening.")
@@ -123,7 +124,7 @@ if __name__ == '__main__':
 			say = listen()
 			if say is not None:
 				break
-		# wants = input("\n\nEnter: ").lower() #listen().lower()
+		# wants = input("\n\nEnter: ").lower()
 		wants = say.lower()
 		# listen()
 
