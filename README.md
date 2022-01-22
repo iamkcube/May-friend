@@ -8,7 +8,7 @@ Uncomment the ```wants``` if you want to type the thing you want to say.
 # wants = input("\n\nEnter: ").lower()
 ```
 ## Usage
-Just speak and ask anything to it. Can use google search and I may add universal music play from Youtube (youtube doesn't like it lol). Can use your music from a folder from your localdisk. And you can explore for more.
+Just speak and ask anything to it. Can use google search, set an alarm and added universal music play from Youtube (youtube doesn't like it lol). And you can explore for more.
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 Don't hesitate to add memes or Easter eggs.

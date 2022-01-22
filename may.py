@@ -4,6 +4,7 @@ mixer.init()
 from playsound import playsound
 import speech_recognition as sprec
 import time
+import youtube_dl
 import wikipedia
 import webbrowser
 import pafy
@@ -39,9 +40,9 @@ def speakmay2(talkie):
 
 def speakmay(talkie):
 	try:
-		speakmay2(talkie)
-	except Exception as e:
 		speakmay1(talkie)
+	except Exception as e:
+		speakmay2(talkie)
 
 def wishmemay():
 	nowhr = int(time.strftime("%H",time.localtime()))
@@ -61,7 +62,7 @@ def listen():
 	with sprec.Microphone() as source:
 		print("\nSay.<3")
 		r.pause_threshold = 1
-		audio = r.listen(source,timeout=3,phrase_time_limit=10)
+		audio = r.listen(source,timeout=7,phrase_time_limit=12)
 		# audio = r.listen(source)
 
 	try:
@@ -70,41 +71,61 @@ def listen():
 		print(f'\n ~ {usertalks}\n')
 		return usertalks
 	except Exception as e:
-		if breakingnum >= 5 and mixer.music.get_busy()==0 :
+		if breakingnum >= 10 and mixer.music.get_busy()==0 :
 			print("\nDon't talk to me. Bye.")
 			speakmay("Don't talk to me. Bye.")
 		else:
 			print("Say that again please.")
+			time.sleep(1)
 		return None #not working as of now
 
 def ytfirsturlreturn(query):
+
+	global queuedict
+
 	results = requests.get(f'https://www.youtube.com/results?search_query={query.replace(" ","+")}').text
-	found = re.findall(r'{"videoId":"[-.\d\w]+', results)[0].split("\"")[3]
-	return f'https://youtu.be/{found}'
+
+	resultsIndex = results.index('{"videoId":')
+
+	resultsRefined = results[resultsIndex:resultsIndex+3000]
+
+	found = re.search(r'{"videoId":"[-.\d\w]+', resultsRefined)[0].split("\"")[3]
+
+	foundindex = resultsRefined.index(found)
+
+	containingtitle = resultsRefined[foundindex:foundindex+1500]
+
+	title = re.findall(r'{"text":"[^"]+"}',containingtitle)[0].split('"')[3]
+
+	url = f'https://youtu.be/{found}'
+
+	queuedict[url]=title
+
+	return url
 
 def musicplay(loop):
-	musicdir = [ item for item in os.listdir(r'F:\Anik\My Musics\English musics') if os.path.splitext(item)[1] == ".mp3"]
+	musicdir = [ item for item in os.listdir(r'F:/Anik/My Musics/English musics') if os.path.splitext(item)[1] == ".mp3"]
 	for index,item in enumerate(musicdir,1):
 		print(f'{index}. {item}')
 	musicwant = int(input("\nWhich song you want to play!?\n"))
-	os.chdir(r'F:\Anik\My Musics\English musics')
+	os.chdir(r'F:/Anik/My Musics/English musics')
 	# mixer.set_num_channels(1)
 	mixer.music.load(musicdir[musicwant-1])
 	mixer.music.fadeout(10000)
 	mixer.music.play(loop)
 
 def musicqueue():
-	musicdir = [ item for item in os.listdir(r'F:\Anik\My Musics\English musics') if os.path.splitext(item)[1] == ".mp3"]
+	musicdir = [ item for item in os.listdir(r'F:/Anik/My Musics/English musics') if os.path.splitext(item)[1] == ".mp3"]
 	for index,item in enumerate(musicdir,1):
 		print(f'{index}. {item}')
 	musicwant = int(input("\nWhich song you want to add to queue!?\n"))
-	os.chdir(r'F:\Anik\My Musics\English musics')
+	os.chdir(r'F:/Anik/My Musics/English musics')
 	print(f'Playing {musicdir[musicwant-1].split(".")[0]}')
 	mixer.music.queue(musicdir[musicwant-1])
 
 def musicrandomplay(loop):
-	musicdir = [ item for item in os.listdir(r'F:\Anik\My Musics\English musics') if os.path.splitext(item)[1] == ".mp3"]
-	os.chdir(r'F:\Anik\My Musics\English musics')
+	musicdir = [ item for item in os.listdir(r'F:/Anik/My Musics/English musics') if os.path.splitext(item)[1] == ".mp3"]
+	os.chdir(r'F:/Anik/My Musics/English musics')
 	# mixer.set_num_channels(1)
 	musicwant = random.randint(0,len(musicdir)-1)
 	print(f'Playing {musicdir[musicwant].split(".")[0]}')
@@ -112,6 +133,26 @@ def musicrandomplay(loop):
 	mixer.music.load(musicdir[musicwant])
 	# mixer.music.fadeout(10000)
 	mixer.music.play(loop)
+
+def ytdlMusicPlay(keyword):
+	infoFile = ytdl.extract_info(keyword,download=True)
+
+	nowplaying = infoFile['entries'][0]['title']
+	nowid = infoFile['entries'][0]['id']
+
+	if mixer.music.get_busy()==0:
+		print(f"Playing {nowplaying} !")
+
+		mixer.music.load(fr'{nowid}.mp3')
+		mixer.music.play()
+
+	else:
+		# queue.append(nowid)
+		mixer.music.queue(fr'{nowid}.mp3')
+
+		print("\nWait for this song to play to add another song to the queue!")
+		time.sleep(2)
+
 
 def newsreturn(numberofnews,topic):
 	newsap = requests.get(f"https://newsapi.org/v2/top-headlines?country=in&pageSize={numberofnews+1}&page=1category={topic}&apiKey=ebfb37ba82c542b1979be299547484dd").text
@@ -140,38 +181,103 @@ def myalarm(hrs,minutes,ampm):
 		# if time.strftime("%I:%M%p",time.localtime()).lower() == yourtime :
 		if int(time.strftime("%I",time.localtime())) == hrs and int(time.strftime("%M",time.localtime())) == minutes and time.strftime("%p",time.localtime()).lower() == ampm :
 			speakmay(f"Your Alarm is Up.")
-			musicrandomplay(0)
+			print(f"Your Alarm is Up.")
+			# musicrandomplay(0)
 			# time.sleep(30)
 			# mixer.music.stop()
 			break
 
 
 
+ytdl_format_options = {
+    # 'format': 'bestaudio/best',
+    'format': 'worstaudio/worst',
+    'outtmpl': '%(id)s.%(ext)s',
+
+    'postprocessors':[
+    {'key':'FFmpegExtractAudio'},
+    {'key':'FFmpegExtractAudio',
+    'preferredcodec':'mp3'}],
+
+    'restrictfilenames': True,
+    'noplaylist': True,
+    # 'forceduration': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+}
+
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+
 
 
 if __name__ == '__main__':
+	os.system('cls')
+
 	wishmemay()
 
+	queuedict={}
 
 	while True:
 		breakingnum = 0
 		while True:
-			say = listen()
-			if say is not None and breakingnum < 5:
-				breakingnum = 0
-				break
-			elif breakingnum >= 5  and mixer.music.get_busy()==0 :
-				exit()
-			else:
-				breakingnum += 1
+			os.system('cls')
+			try:
+				say = listen()
+				if say is not None and breakingnum < 10:
+					breakingnum = 0
+					break
+				elif mixer.music.get_busy()==1:
+					breakingnum = 1
+				elif breakingnum >= 10  and mixer.music.get_busy()==0 :
+					exit()
+				else:
+					breakingnum += 1
+			except Exception as e:
+				speakmay("Speak a bit earlier!")
+
 		# wants = input("\n\nEnter: ").lower()
 		wants = say.lower()
 		# listen()
+		if mixer.music.get_busy()==1:
+			if "pause" in wants:
+				mixer.music.pause()
+				continue
+
+			elif "stop" in wants:
+				mixer.music.stop()
+				continue
+
+			elif "rewind" in wants:
+				mixer.music.rewind()
+				continue
+
+			elif "volume" in wants:
+				try:
+					vol = re.findall(r'\d+',wants)[0]
+					if "percent" in wants or "%" in wants:
+						mixer.music.set_volume(int(vol)/100)
+					else:
+						mixer.music.set_volume(int(vol)/10)
+				except Exception as e:
+					print("Please give a value of volume.")
+					speakmay("Please give a value of volume.")
+				finally:
+					continue
+			elif "next" in wants:
+				musicrandomplay(0)
+				continue
 
 		if wants == "exit" or 'bye' in wants:
+			speakmay("Bye Bye! Take Care.")
 			break
 
-		elif "sleep" in wants:
+		elif "sleep" in wants and [x for x in wants if x.isnumeric()]!=[]:
 			if "min" in wants:
 				time.sleep(int(re.findall(r'\d+',wants)[0])*60)
 			else:
@@ -189,26 +295,8 @@ if __name__ == '__main__':
 			except Exception as e:
 				print("Couldn't fetch weather. Try again.")
 
-		elif mixer.music.get_busy()==1:
-			if "pause" in wants:
-				mixer.music.pause()
 
-			elif "stop" in wants:
-				mixer.music.stop()
 
-			elif "rewind" in wants:
-				mixer.music.rewind()
-
-			elif "volume" in wants:
-				vol = re.findall(r'\d+',wants)[0]
-				if "percent" in wants or "%" in wants:
-					mixer.music.set_volume(int(vol)/100)
-				else:
-					mixer.music.set_volume(int(vol)/10)
-
-			elif "next" in wants:
-				musicrandomplay(0)
-			
 		elif "music" in wants:
 			if "play" in wants :
 				if mixer.music.get_busy()==0 and "loop" not in wants and "queue" not in wants and "random" not in wants:
@@ -303,23 +391,35 @@ if __name__ == '__main__':
 
 		elif "play" in wants and "youtube" in wants:
 			url = ytfirsturlreturn(wants.replace("play","").replace("youtube","").replace("on",""))
-			speakmay(f"Playing {pafy.new(url).title} on Youtube")
+			print(f"Playing {queuedict[url]} on Youtube")
+			speakmay(f"Playing {queuedict[url]} on Youtube")
 			webbrowser.open_new_tab(url)
+
+		elif "play" in wants:
+			keyword = wants.replace("play","")
+
+			print("Please Wait...")
+
+			ytdlMusicPlay(keyword)
 
 		elif "search" in wants and "google" in wants:
 			url = f'https://www.google.com/search?q={wants.replace("search ","").replace("google ","").replace(" ","+")}'
 			webbrowser.open_new_tab(url)
 
 		elif "search" in wants and "youtube" in wants:
-			url = f'https://www.youtube.com/results?search_query={wants.replace("search ","").replace("youtube ","").replace(" ","+")}'
+			keyword = wants.replace("search ","").replace("youtube ","")
+			print(f"Searching for {keyword}")
+			url = f'https://www.youtube.com/results?search_query={keyword.replace(" ","+")}'
 			webbrowser.open_new_tab(url)
 
 		elif "search" in wants:
 			try:
-				results = wikipedia.summary(wants.replace("search",""),sentences=2)
+				keyword = wants.replace("search","")
+				print(f"Searching for {keyword}")
+				results = wikipedia.summary(keyword,sentences=2)
 				if "==" in results:
-					print(wikipedia.summary(wants.replace("search","")))
-					speakmay(wikipedia.summary(wants.replace("search","")))
+					print(wikipedia.summary(keyword))
+					speakmay(wikipedia.summary(keyword))
 				else:
 					print(results)
 					speakmay(results)
@@ -369,6 +469,8 @@ if __name__ == '__main__':
 
 		else:
 			speakmay("Sorry, I can't help with this.")
+
+		time.sleep(2)
 
 
 
